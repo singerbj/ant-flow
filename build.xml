@@ -1,0 +1,23 @@
+<project name="prj">
+    <target name="a" depends="b"></target>
+
+    <target name="b" depends="c">
+        <antcall target="e"></antcall>
+    </target>
+
+    <target name="c" depends="d"></target>
+
+    <target name="d">
+        <antcall target="f"/>
+        <antcall target="g"/>
+        <antcall target="h"/>
+    </target>
+
+    <target name="e"></target>
+    <target name="f"></target>
+    <target name="g"></target>
+    <target name="h"></target>
+</project>
+
+
+<!-- d - f - g - h - c - b - e - a -->

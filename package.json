@@ -1,0 +1,11 @@
+{
+  "name": "firebase-idea",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "xml2js": "*",
+    "clone": "*"
+  }
+}
