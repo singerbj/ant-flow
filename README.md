@@ -8,4 +8,4 @@ and then
 
 ```npm start```
 
-and then look for it at [localhost:1337][http://localhost:1337]
+and then look for it at [localhost:1337](http://localhost:1337)
