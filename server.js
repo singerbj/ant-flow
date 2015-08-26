@@ -23,7 +23,6 @@ app.get('/mycss.css', function(req, res) {
 
 app.post('/data', function(req, res) {
         var body = req.body;
-        console.log(typeof body.xml, body.xml);
         var allTargets = {};
         var props = {};
         parseString(body.xml, function(err, results) {
