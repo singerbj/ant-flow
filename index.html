@@ -2,53 +2,125 @@
 <html ng-app="app">
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ant Flow</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/mycss.css" rel="stylesheet">
 </head>
 
-<body ng-controller="Controller as c">
-
-    <select ng-model="c.baseTarget" ng-change="c.update()" ng-options="key for key in c.targetKeys | orderBy:'toString()'"></select>
+<body ng-controller="Controller as c" ng-cloak>
+    <div class="container">
+        <h2>Ant Flow</h2>
+        <p>
+            The order in which your ant targets are called, based on an initial target call and the props that can be set.
+        </p>
+        <div class="row">
+            <div class="col-md-2">
+                <h5 class="control-label">Select a File</h5>
+                <span class="btn btn-primary btn-file">
+                    Browse
+                    <input class="form-control" ng-model="c.file" onchange="angular.element(this).scope().file_changed(this)" type="file" accept="xml" />
+                </span>
+            </div>
+            <div class="col-md-3" ng-show="!c.loading && !(c.error.length > 0)">
+                <h5 class="control-label">Initial Target</h5>
+                <select class="form-control" ng-model="c.baseTarget" ng-change="c.update()" ng-options="key for key in c.targetKeys | orderBy:'toString()'"></select>
+                <br>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-12">
+                <div ng-show="!c.loading && !(c.error.length > 0)">
+                    <ul class="nav nav-tabs">
+                        <li role="presentation" class="{{ c.showResults === true ? 'active' : '' }}" ng-click="c.showResults = true; c.showXml = false; c.showCommandOrder = false;"><a href><b>Target Order</b></a></li>
+                        <li role="presentation" class="{{ c.showCommandOrder === true ? 'active' : '' }}" ng-click="c.showResults = false; c.showXml = false;  c.showCommandOrder = true;"><a href><b>Target Order w/ Contents</b></a></li>
+                        <li role="presentation" class="{{ c.showXml === true ? 'active' : '' }}" ng-click="c.showResults = false; c.showXml = true; c.showCommandOrder = false;"><a href><b>Raw XML</b></a></li>
+                    </ul>
+                    <div ng-show="c.showResults || c.showCommandOrder">
+                        <br>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="c.useProps">Use props to generate flow
+                            </label>
+                        </div>
+                        <div ng-show="c.useProps">
+                            <span ng-repeat="(k, v) in c.props">
+                                <button class="btn btn-{{ v.selected ? 'info' : 'danger' }} btn-xs" ng-click="v.selected = !v.selected">{{ k }}</button>
+                            </span>
+                            <div>
+                                <small>
+                                    <span class="text-default">
+                                        Click to toggle props.
+                                        <span class="text-primary"><b>Blue</b></span> props are set.
+                                        <span class="text-danger"><b>Red</b></span> props are not set.
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                    <div ng-show="c.showResults">
+                        <table class="table">
+                            <thead>
+                                <th class="num-col">#</th>
+                                <th class="td-width">Target Name</th>
+                                <th class="td-width">Description</th>
+                                <th class="td-width">If</th>
+                                <th class="td-width">Unless</th>
+                            </thead>
+                            <tr ng-repeat="target in c.propsFilter() track by $index">
+                                <td class="num-col">{{ $index + 1 }}</td>
+                                <td class="td-width"><a href ng-click="c.baseTarget = target.name; c.update()">{{ target.name }}</a></td>
+                                <td class="td-width">{{ target.description || '-' }}</td>
+                                <td class="td-width">{{ target.if || '-' }}</td>
+                                <td class="td-width">{{ target.unless || '-' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div ng-show="c.showCommandOrder">
+                        <div ng-repeat="target in c.propsFilter() track by $index">
+                            <label>{{ $index + 1 }}. {{ target.name }}</label>
+                            <small>
+                                <span class="text-default" ng-show="target.if">
+                                    (if: {{ target.if }})
+                                </span>
+                                &nbsp;
+                                <span class="text-default" ng-show="target.unless">
+                                    (unless: {{ target.unless }})
+                                </span>
+                            </small>
+                            <pre>
+                                {{ target.contents }}
+                            </pre>
+                        </div>
+                    </div>
+                    <div ng-show="c.showXml">
+                        <br>
+                        <pre class="prettyprint linenums languague-xml">{{ c.xml }}</pre>
+                    </div>
+                </div>
+                <div ng-show="c.loading && c.fileChosen === true">
+                    <br>
+                    <br>
+                    <br>
+                    <h1>LOADING</h1>
+                </div>
+                <div ng-show="c.error.length > 0">
+                    <br>
+                    <br>
+                    <br>
+                    <h1>
+                        <span class="text-danger">{{ c.error }}</span>
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.3.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.4/angular.min.js"></script>
-    <script>
-        var app = angular.module('app', []);
-
-        app.controller('Controller', ["$scope", "$http", function($scope, $http) {
-            var self = this;
-            self.targets = {};
-            self.targetKeys = [];
-
-
-            $http.get('/targets').success(function(targets){
-                self.targets = targets;
-                for (var key in targets) {
-                    if (targets.hasOwnProperty(key)) {
-                        self.targetKeys.push(key);
-                    }
-                }
-                self.targetKeys.sort();
-                self.baseTarget = self.targetKeys[0];
-                self.buildTimeLine();
-            }).error(function(err){
-                console.log(err);
-            });
-
-            self.update = function(){
-                console.log('update');
-            };
-
-            self.timeline = [];
-            self.buildTimeLine = function(){
-                var miniTL = [];
-                var target = self.targets[self.baseTarget];
-                // miniTL.push
-
-
-            };
-
-        }]);
-    </script>
+    <script type="text/javascript" src="/myjs.js"></script>
 </body>
 
 </html>

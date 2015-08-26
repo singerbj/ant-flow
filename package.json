@@ -1,11 +1,14 @@
 {
-  "name": "firebase-idea",
+  "name": "ant-flow",
+  "description": "Ant Flow shows the order in which your ant targets are called",
   "scripts": {
     "start": "node server.js"
   },
+  "license": "MIT",
   "dependencies": {
     "express": "*",
     "xml2js": "*",
-    "clone": "*"
+    "clone": "*",
+    "body-parser": "*"
   }
 }
