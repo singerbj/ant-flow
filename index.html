@@ -31,7 +31,7 @@
         <br>
         <div class="row">
             <div class="col-md-12">
-                <div ng-show="!c.loading && !(c.error.length > 0)">
+                <div ng-show="!c.loading && !c.error">
                     <ul class="nav nav-tabs">
                         <li role="presentation" class="{{ c.showResults === true ? 'active' : '' }}" ng-click="c.showResults = true; c.showXml = false; c.showCommandOrder = false;"><a href><b>Target Order</b></a></li>
                         <li role="presentation" class="{{ c.showCommandOrder === true ? 'active' : '' }}" ng-click="c.showResults = false; c.showXml = false;  c.showCommandOrder = true;"><a href><b>Target Order w/ Contents</b></a></li>
@@ -100,7 +100,7 @@
                         <pre class="prettyprint linenums languague-xml">{{ c.xml }}</pre>
                     </div>
                 </div>
-                <div ng-show="c.loading && c.fileChosen === true">
+                <div ng-show="c.loading && c.fileChosen === true && !c.error">
                     <br>
                     <br>
                     <br>

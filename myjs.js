@@ -104,8 +104,9 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             self.loading = false;
             $scope.$apply();
         } catch (e) {
-            self.error = true;
-            throw e;
+            self.loading = false;
+            self.error = "Error converting uploaded file.";
+            $scope.$apply();
         }
     };
 
