@@ -8,11 +8,11 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
     self.showXml = false;
     self.showCommandOrder = false;
     self.error = "";
+    self.filename = "";
     self.targets = {};
     self.props = {};
     self.targetKeys = [];
     self.timeline = [];
-
 
     $scope.file_changed = function(element) {
         $scope.$apply(function(scope) {
@@ -26,7 +26,7 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             var file = element.files[0];
             var reader = new FileReader();
             reader.onload = function(e) {
-                self.convert(e.target.result.toString());
+                self.convert(e.target.result.toString(), file.name);
             };
             if (file) {
                 self.fileChosen = true;
@@ -37,7 +37,7 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
         });
     };
 
-    self.convert = function(xml){
+    self.convert = function(xml, filename) {
         try {
             var x2js = new X2JS();
             var json = x2js.xml_str2json(xml);
@@ -90,6 +90,7 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
                 allTargets[target._name] = targetObj;
             });
 
+            self.filename = filename;
             self.targets = allTargets;
             self.props = props;
             self.xml = xml;
@@ -103,6 +104,17 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             self.update();
             self.loading = false;
             $scope.$apply();
+            if(self.saveXML){
+                self.saveXML({
+                    name: filename,
+                    targets: self.targets,
+                    props: self.props,
+                    targetKeys: self.targetKeys,
+                    timeline: self.timeline,
+                    xml: self.xml
+                });
+            }
+
         } catch (e) {
             self.loading = false;
             self.error = "Error converting uploaded file.";
@@ -167,4 +179,44 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             return self.timeline;
         }
     };
+
+
+    if (typeof(window.localStorage) != 'undefined') {
+        var s = window.localStorage;
+        self.loadXML = function() {
+            self.recent = JSON.parse(s.getItem('recent'));
+            console.log('loaded');
+        };
+
+        self.setXML = function(xmlObj) {
+            self.loading = true;
+            self.filename = xmlObj.name;
+            self.xml = xmlObj.xml;
+            self.targets = xmlObj.targets;
+            self.props = xmlObj.props;
+            self.targetKeys = xmlObj.targetKeys;
+            self.targetKeys.sort();
+            self.timeline = xmlObj.timeline;
+            self.baseTarget = self.targetKeys[0];
+            self.update();
+            self.loading = false;
+        };
+
+        self.saveXML = function(xmlObj) {
+            var recent = JSON.parse(s.getItem('recent'));
+            if (!recent) recent = [];
+            recent.unshift(xmlObj);
+            recent.splice(5, recent.length);
+            s.setItem('recent', JSON.stringify(recent));
+            console.log('saved');
+            self.loadXML();
+        };
+
+        //load recent
+        self.loadXML();
+
+    } else {
+        throw "No saving and loading of recent xml files possible in this browser.";
+    }
+
 }]);

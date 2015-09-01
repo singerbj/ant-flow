@@ -22,10 +22,18 @@
                     <input class="form-control" ng-model="c.file" onchange="angular.element(this).scope().file_changed(this)" type="file" accept="xml" />
                 </span>
             </div>
+            <div class="col-md-2">
+                <h5 class="control-label" ng-show="!c.loading && !(c.error.length > 0)">File</h5>
+                <h4 style="margin-top: 18px;">{{ c.filename }}</h4>
+            </div>
             <div class="col-md-3" ng-show="!c.loading && !(c.error.length > 0)">
                 <h5 class="control-label">Initial Target</h5>
                 <select class="form-control" ng-model="c.baseTarget" ng-change="c.update()" ng-options="key for key in c.targetKeys | orderBy:'toString()'"></select>
                 <br>
+            </div>
+            <div class="col-md-5" ng-show="c.setXML">
+                <h5 class="control-label">Recent Files</h5>
+                <div ng-repeat="recent in c.recent"><a href ng-click="c.setXML ? c.setXML(recent) : ''">{{ recent.name }}</a></div>
             </div>
         </div>
         <br>
