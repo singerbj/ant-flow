@@ -26,31 +26,77 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             var file = element.files[0];
             var reader = new FileReader();
             reader.onload = function(e) {
+                var xml = e.target.result.toString();
+                var x2js = new X2JS();
+                var json = x2js.xml_str2json(xml);
 
-                var xml = e.target.result;
-                $http.post('/data', { xml: xml.toString() } ).success(function(data) {
-                    self.targets = data.targets;
-                    self.props = data.props;
-                    self.xml = data.xml;
-                    for (var key in self.targets) {
-                        if (self.targets.hasOwnProperty(key)) {
-                            self.targetKeys.push(key);
+                var allTargets = {};
+                var props = {};
+                json.project.target.forEach(function(target) {
+                    var targetObj = {};
+                    targetObj.name = target._name.trim();
+                    if (target._description) {
+                        targetObj.description = target._description.trim() ? target._description : '';
+                    }
+                    if (target.antcall && target.antcall.length) {
+                        targetObj.antcalls = target.antcall.map(function(antcall) {
+                            return antcall._target.trim();
+                        });
+                    } else if (target.antcall && !target.antcall.length) {
+                        targetObj.antcalls = [target.antcall._target.trim()];
+                    } else {
+                        targetObj.antcalls = [];
+                    }
+                    if (target._depends) {
+                        targetObj.depends = target._depends.replace(/ /g, '').split(',');
+                    } else {
+                        targetObj.depends = [];
+                    }
+                    if (target._if) {
+                        targetObj.if = target._if.replace(/ /g, '');
+                        if (!props[targetObj.if]) {
+                            props[targetObj.if] = ({
+                                name: targetObj.if,
+                                selected: true
+                            });
                         }
                     }
-                    self.targetKeys.sort();
-                    self.baseTarget = self.targetKeys[0];
-                    self.update();
-                    self.loading = false;
-                }).error(function(err) {
-                    console.error(err);
-                    self.error = err.error;
-                    self.loading = false;
+                    if (target._unless) {
+                        targetObj.unless = target._unless.replace(/ /g, '');
+                        if (!props[targetObj.unless]) {
+                            props[targetObj.unless] = {
+                                name: targetObj.unless,
+                                selected: true
+                            };
+                        }
+                    }
+                    targetObj.contents = {};
+                    for (var key in target) {
+                        if (target.hasOwnProperty(key) && key != '$' && key != 'antcall') {
+                            targetObj.contents[key] = target[key];
+                        }
+                    }
+                    allTargets[target._name] = targetObj;
                 });
+
+                self.targets = allTargets;
+                self.props = props;
+                self.xml = xml;
+                for (var key in self.targets) {
+                    if (self.targets.hasOwnProperty(key)) {
+                        self.targetKeys.push(key);
+                    }
+                }
+                self.targetKeys.sort();
+                self.baseTarget = self.targetKeys[0];
+                self.update();
+                self.loading = false;
+                $scope.$apply();
             };
-            if(file){
+            if (file) {
                 self.fileChosen = true;
                 reader.readAsText(file);
-            }else{
+            } else {
                 self.fileChosen = false;
             }
         });
@@ -59,7 +105,7 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
 
 
     self.buildTimeLine = function(currentTarget) {
-        if(currentTarget){
+        if (currentTarget) {
             var miniTL = [];
             if (currentTarget.depends) {
                 currentTarget.depends.forEach(function(target) {
