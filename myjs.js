@@ -103,7 +103,6 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             self.baseTarget = self.targetKeys[0];
             self.update();
             self.loading = false;
-            $scope.$apply();
             if(self.saveXML){
                 self.saveXML({
                     name: filename,
@@ -114,7 +113,7 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
                     xml: self.xml
                 });
             }
-
+            $scope.$apply();
         } catch (e) {
             self.loading = false;
             self.error = "Error converting uploaded file.";
@@ -203,13 +202,13 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
         };
 
         self.saveXML = function(xmlObj) {
-            var recent = JSON.parse(s.getItem('recent'));
-            if (!recent) recent = [];
-            recent.unshift(xmlObj);
-            recent.splice(5, recent.length);
-            s.setItem('recent', JSON.stringify(recent));
-            console.log('saved');
-            self.loadXML();
+            self.recent = JSON.parse(s.getItem('recent'));
+            console.log('before', self.recent, self.recent.length);
+            if(!self.recent) self.recent = [];
+            self.recent.unshift(xmlObj);
+            if(self.recent.length > 5) self.recent.splice(5, self.recent.length);
+            s.setItem('recent', JSON.stringify(self.recent));
+            console.log('saved', self.recent, self.recent.length);
         };
 
         //load recent
