@@ -31,7 +31,7 @@
                 <select class="form-control" ng-model="c.baseTarget" ng-change="c.update()" ng-options="key for key in c.targetKeys | orderBy:'toString()'"></select>
                 <br>
             </div>
-            <div class="col-md-5" ng-show="c.setXML">
+            <div class="col-md-5" ng-show="c.setXML && c.recent.length > 0">
                 <h5 class="control-label">Recent Files</h5>
                 <div ng-repeat="recent in c.recent"><a href ng-click="c.setXML ? c.setXML(recent) : ''">{{ recent.name }}</a></div>
             </div>

@@ -118,6 +118,7 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             self.loading = false;
             self.error = "Error converting uploaded file.";
             $scope.$apply();
+            console.error(e);
         }
     };
 
@@ -184,7 +185,6 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
         var s = window.localStorage;
         self.loadXML = function() {
             self.recent = JSON.parse(s.getItem('recent'));
-            console.log('loaded');
         };
 
         self.setXML = function(xmlObj) {
@@ -203,17 +203,14 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
 
         self.saveXML = function(xmlObj) {
             self.recent = JSON.parse(s.getItem('recent'));
-            console.log('before', self.recent, self.recent.length);
             if(!self.recent) self.recent = [];
             self.recent.unshift(xmlObj);
             if(self.recent.length > 5) self.recent.splice(5, self.recent.length);
             s.setItem('recent', JSON.stringify(self.recent));
-            console.log('saved', self.recent, self.recent.length);
         };
 
         //load recent
         self.loadXML();
-
     } else {
         throw "No saving and loading of recent xml files possible in this browser.";
     }
