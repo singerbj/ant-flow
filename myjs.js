@@ -24,9 +24,11 @@ app.controller('Controller', ["$scope", "$http", function($scope, $http) {
             self.timeline = [];
 
             var file = element.files[0];
+            f = file;
             var reader = new FileReader();
             reader.onload = function(e) {
-                self.convert(e.target.result.toString(), file.name);
+                var date = new Date();
+                self.convert(e.target.result.toString(), file.name + " (" + date.toLocaleTimeString() + " - " + date.toLocaleDateString() + ")");
             };
             if (file) {
                 self.fileChosen = true;
